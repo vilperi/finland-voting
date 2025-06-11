@@ -1,0 +1,39 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Urbanist', 'Segoe UI', 'Helvetica Neue', sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+#map {
+  height: 100%;
+  margin: 20px;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.9em;
+  color: #666;
+}
+
+footer a {
+  color: #007ac9;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}

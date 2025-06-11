@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Helsinki Election Map</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/static/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+
+<body>
+  <h1>Helsingin vaalitulokset kartalla</h1>
+  <div id="description">
+    <p>Tämä kartta näyttää Helsingin vaalialueiden tulokset vuoden 2023 kuntavaaleista. Kartalla on esitetty viisi suurinta puoluetta kussakin vaalialueessa.</p>
+    <p>Valitse vaalialue napsauttamalla aluetta kartalla nähdäksesi tarkemmat tulokset.</p>
+  </div>
+  <div id="selector">
+    <label for="election">Valitse vaalit:</label>
+    <select id="election">
+      <option value="Aluevaalit">Aluevaalit</option>
+      <option value="Eduskuntavaalit">Eduskuntavaalit</option>
+      <option value="Kuntavaalit">Kuntavaalit</option>
+      <option value="Presidentinvaalit">Presidentinvaalit</option>
+    </select>
+    <label for="year">Valitse vaalivuosi:</label>
+    <select id="year">
+      
+    </select>
+
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var partyColors = {
+      "SDP": "#f54b4b",
+      "KOK": "#003a54",
+      "VIHR": "#284734",
+      "VAS": "#F00A64",
+      "PS": "#ffeb00",
+      "RKP": "#007ac9",
+      "KESK": "#4E9A06",
+      "LIIK": "#A259C4",
+      "LIBE": "#00BFFF",
+      "PIR": "#8E44AD",
+      "MUU": "#CCCCCC"
+    };
+
+    function getPartyColor(party) {
+      return partyColors[party] || "#CCCCCC";
+    }
+
+    var map = L.map('map').setView([60.192059, 24.945831], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Use the new, smaller GeoJSON file
+    fetch('/data/helsinki_top5.geojson')
+      .then(resp => resp.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: function (feature) {
+            // Color by the biggest party (rank 1)
+            var party = feature.properties['Puolueen/ryhmän nimilyhenne suomeksi_1'].trim();
+            return {
+              color: "#333",
+              weight: 1,
+              fillColor: getPartyColor(party),
+              fillOpacity: 0.7
+            };
+          },
+          onEachFeature: function (feature, layer) {
+            // Show top 5 parties in popup
+            let popup = "<b>" + (feature.properties['nimi'] || feature.properties['name'] || "") + "</b><br>";
+            for (let i = 1; i <= 5; i++) {
+              let party = feature.properties[`Puolueen/ryhmän nimilyhenne suomeksi_${i}`];
+              let votes = feature.properties[`Äänet yhteensä lkm_${i}`];
+              let share = feature.properties[`Osuus(%)_${i}`];
+              if (party) {
+                popup += `${party}: ${votes} ääntä (${share}%)<br>`;
+              }
+            }
+            layer.bindPopup(popup);
+          }
+        }).addTo(map);
+      });
+  </script>
+  <footer>
+    <p>
+      Data: <a href="https://tulospalvelu.vaalit.fi/fi/index.html" target="_blank">Oikeusministeriö Tieto- ja tulospalvelu</a> | 
+      <a href="https://hri.fi/data/fi/dataset/paakaupunkiseudun-aanestysaluejako" target="_blank">HRI/Helsingin kaupunkiympäristön toimiala</a>
+    </p>
+    <p>Basemap by <a href="https://leafletjs.com/" target="_blank">Leaflet</a></p>
+    <p>Created by Vili Rauhala</p>
+  </footer>
+</body>
+</html>
